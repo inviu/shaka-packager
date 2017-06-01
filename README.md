@@ -58,7 +58,7 @@ on your machine to access the source code.
 3. Get the source
 
   ```Shell
-  <font color=#FF0000>shaka_packager and silver-sdk-cpp must in the same level directory</font>
+  # shaka_packager and silver-sdk-cpp must in the same level directory
   mkdir shaka_packager
   cd shaka_packager
   gclient config https://github.com/inviu/shaka-packager.git --name=src
