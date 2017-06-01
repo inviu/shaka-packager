@@ -58,20 +58,15 @@ on your machine to access the source code.
 3. Get the source
 
   ```Shell
-  <font color=#FF0000>shaka_packager and silver-sdk-cpp must in the same level directory</font>
-  mkdir shaka_packager  #shaka_packager and silver-sdk-cpp must in the same level directory#
+  # shaka_packager and silver-sdk-cpp must in the same level directory
+  mkdir shaka_packager  
   cd shaka_packager
   gclient config https://github.com/inviu/shaka-packager.git --name=src
   gclient sync
+  cd src 
+  git checkout -b silver-sdk-cpp
   ```
-  To sync to a particular commit or version, use 'gclient sync -r \<revision\>', e.g.
-  ```Shell
-  # Sync to commit 4cb5326355e1559d60b46167740e04624d0d2f51
-  gclient sync -r 4cb5326355e1559d60b46167740e04624d0d2f51
-  # Sync to version 1.2.0
-  gclient sync -r v1.2.0
-  ```
-
+  
 4. Build
 
   We use ninja, which is much faster than make, to build our code:
