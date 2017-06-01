@@ -58,9 +58,10 @@ on your machine to access the source code.
 3. Get the source
 
   ```Shell
-  mkdir shaka_packager
+  <font color=#FF0000>shaka_packager and silver-sdk-cpp must in the same level directory</font>
+  mkdir shaka_packager  #shaka_packager and silver-sdk-cpp must in the same level directory#
   cd shaka_packager
-  gclient config https://www.github.com/google/shaka-packager.git --name=src
+  gclient config https://github.com/inviu/shaka-packager.git --name=src
   gclient sync
   ```
   To sync to a particular commit or version, use 'gclient sync -r \<revision\>', e.g.
