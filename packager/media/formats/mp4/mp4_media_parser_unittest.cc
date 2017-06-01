@@ -43,7 +43,7 @@ namespace mp4 {
 
 class MP4MediaParserTest : public testing::Test {
  public:
-  MP4MediaParserTest() : num_streams_(0), num_samples_(0) {
+  MP4MediaParserTest() : num_streams_(0), num_samples_(0), is_first_(true){
     parser_.reset(new MP4MediaParser());
   }
 
@@ -53,6 +53,7 @@ class MP4MediaParserTest : public testing::Test {
   std::unique_ptr<MP4MediaParser> parser_;
   size_t num_streams_;
   size_t num_samples_;
+  bool is_first_;
 
   bool AppendData(const uint8_t* data, size_t length) {
     return parser_->Parse(data, static_cast<int>(length));
@@ -74,6 +75,7 @@ class MP4MediaParserTest : public testing::Test {
   }
 
   void InitF(const std::vector<std::shared_ptr<StreamInfo>>& streams) {
+	  DVLOG(2) << "----------------InitF----------------";
     for (const auto& stream_info : streams) {
       DVLOG(2) << stream_info->ToString();
       stream_map_[stream_info->track_id()] = stream_info;
@@ -90,25 +92,105 @@ class MP4MediaParserTest : public testing::Test {
     return true;
   }
 
+  void EndOfSegmentF()
+  {
+    DVLOG(2) << "End of segment";
+  }
+
   void InitializeParser(KeySource* decryption_key_source) {
     parser_->Init(
         base::Bind(&MP4MediaParserTest::InitF, base::Unretained(this)),
         base::Bind(&MP4MediaParserTest::NewSampleF, base::Unretained(this)),
+        base::Bind(&MP4MediaParserTest::EndOfSegmentF, base::Unretained(this)),
         decryption_key_source);
   }
 
   bool ParseMP4File(const std::string& filename, int append_bytes) {
-    InitializeParser(NULL);
-    if (!parser_->LoadMoov(GetTestDataFilePath(filename).AsUTF8Unsafe()))
-      return false;
-    std::vector<uint8_t> buffer = ReadTestDataFile(filename);
+	  if (is_first_)
+	  {
+		  InitializeParser(NULL);
+		  is_first_ = false;
+		  if (!parser_->LoadMoov(GetTestDataFilePath(filename).AsUTF8Unsafe()))
+			  return false;
+	  }
+
+	  std::vector<uint8_t> buffer = ReadTestDataFile(filename);
     return AppendDataInPieces(buffer.data(), buffer.size(), append_bytes);
   }
 };
 
+TEST_F(MP4MediaParserTest, TestSomeSegments) {
+#if 1
+
+	//ParseMP4File("bali_30s_layer1_y0_p0_r0_1_init.mp4", 512);
+	//ParseMP4File("bali_30s_layer1_y0_p0_r0_1_1.m4s", 512);
+	//ParseMP4File("bali_30s_layer1_y0_p0_r0_1_2.m4s", 512);
+	//ParseMP4File("bali_30s_layer1_y0_p0_r0_1_3.m4s", 512);
+
+#if 0
+  InitializeParser(NULL);
+  std::vector<uint8_t> buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_init.mp4");
+  EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+
+  buffer.clear();
+  buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_1.m4s");
+  EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+
+
+  buffer.clear();
+  buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_1.m4s");
+  EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+
+  buffer.clear();
+  buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_1.m4s");
+  EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+
+#else
+	std::cout << "\n\n-------------------------------------------\n";
+	InitializeParser(NULL);
+	std::vector<uint8_t> buffer = ReadTestDataFile("viunidowu.20001100i002.0_v.mp4");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+
+	buffer.clear();
+	buffer = ReadTestDataFile("viunidowu.20001100i002.1_v.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+
+
+	buffer.clear();
+	buffer = ReadTestDataFile("viunidowu.20001100i002.2_v.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+
+	buffer.clear();
+	buffer = ReadTestDataFile("viunidowu.20001100i002.3_v.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+	std::cout << "\n\n-------------------------------------------\n";
+	
+#endif
+
+#else
+  InitializeParser(NULL);
+  std::vector<uint8_t> buffer = ReadTestDataFile("12345init.mp4");
+  EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+
+  buffer.clear();
+  buffer = ReadTestDataFile("123451.m4s");
+  EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+
+
+  buffer.clear();
+  buffer = ReadTestDataFile("123452.m4s");
+  EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+
+  buffer.clear();
+  buffer = ReadTestDataFile("123453.m4s");
+  EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+#endif
+}
+
 TEST_F(MP4MediaParserTest, UnalignedAppend) {
   // Test small, non-segment-aligned appends (small enough to exercise
   // incremental append system)
+
   EXPECT_TRUE(ParseMP4File("bear-640x360-av_frag.mp4", 512));
   EXPECT_EQ(2u, num_streams_);
   EXPECT_EQ(201u, num_samples_);
