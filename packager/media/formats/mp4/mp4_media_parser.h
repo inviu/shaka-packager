@@ -36,7 +36,7 @@ class MP4MediaParser : public MediaParser {
   /// @{
   void Init(const InitCB& init_cb,
             const NewSampleCB& new_sample_cb,
-			const EndMediaSegmentCB end_of_segment_cb,
+            const EndMediaSegmentCB& end_of_segment_cb,
             KeySource* decryption_key_source);
 
   /// @name MediaParser implementation overrides.
@@ -44,7 +44,6 @@ class MP4MediaParser : public MediaParser {
   void Init(const InitCB& init_cb,
             const NewSampleCB& new_sample_cb,
             KeySource* decryption_key_source) override;
-
 
   bool Flush() override WARN_UNUSED_RESULT;
   bool Parse(const uint8_t* buf, int size) override WARN_UNUSED_RESULT;
@@ -59,12 +58,7 @@ class MP4MediaParser : public MediaParser {
   bool LoadMoov(const std::string& file_path);
 
  private:
-  enum State {
-    kWaitingForInit,
-    kParsingBoxes,
-    kEmittingSamples,
-    kError
-  };
+  enum State { kWaitingForInit, kParsingBoxes, kEmittingSamples, kError };
 
   bool ParseBox(bool* err);
   bool ParseMoov(mp4::BoxReader* reader);
