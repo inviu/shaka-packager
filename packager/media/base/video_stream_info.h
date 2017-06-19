@@ -66,6 +66,30 @@ class VideoStreamInfo : public StreamInfo {
   uint32_t playback_rate() const { return playback_rate_; }
   const std::vector<uint8_t>& eme_init_data() const { return eme_init_data_; }
 
+  ///add by jayden
+  const std::vector<uint8_t>& sps_data() const { return sps_data_; }
+  const std::vector<uint8_t>& pps_data() const { return pps_data_; }
+
+
+  void set_sps_data(const uint8_t* sps_data,
+                         size_t sps_data_size) {
+    sps_data_.assign(sps_data, sps_data + sps_data_size);
+  }
+
+  void set_sps_data(const std::vector<uint8_t>& sps_data) {
+	  sps_data_.assign(sps_data.begin(), sps_data.end());
+  }
+
+  void set_pps_data(const uint8_t* pps_data,
+	  size_t pps_data_size) {
+	  pps_data_.assign(pps_data, pps_data + pps_data_size);
+  }
+
+  void set_pps_data(const std::vector<uint8_t>& pps_data) {
+	  pps_data_.assign(pps_data.begin(), pps_data.end());
+  }
+  ///add by jayden
+
   void set_width(uint32_t width) { width_ = width; }
   void set_height(uint32_t height) { height_ = height; }
   void set_pixel_width(uint32_t pixel_width) { pixel_width_ = pixel_width; }
@@ -117,6 +141,11 @@ class VideoStreamInfo : public StreamInfo {
   // Not using DISALLOW_COPY_AND_ASSIGN here intentionally to allow the compiler
   // generated copy constructor and assignment operator. Since the extra data is
   // typically small, the performance impact is minimal.
+
+  // add by jayden
+  std::vector<uint8_t> sps_data_;
+  std::vector<uint8_t> pps_data_;
+  // add by jayden
 };
 
 }  // namespace media

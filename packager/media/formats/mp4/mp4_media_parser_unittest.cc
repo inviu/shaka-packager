@@ -121,29 +121,32 @@ class MP4MediaParserTest : public testing::Test {
 
 TEST_F(MP4MediaParserTest, TestSomeSegments) {
 #if 1
-
-	//ParseMP4File("bali_30s_layer1_y0_p0_r0_1_init.mp4", 512);
-	//ParseMP4File("bali_30s_layer1_y0_p0_r0_1_1.m4s", 512);
-	//ParseMP4File("bali_30s_layer1_y0_p0_r0_1_2.m4s", 512);
-	//ParseMP4File("bali_30s_layer1_y0_p0_r0_1_3.m4s", 512);
+	/*
+	ParseMP4File("bali_30s_layer1_y0_p0_r0_1_init.mp4", 512);
+	ParseMP4File("bali_30s_layer1_y0_p0_r0_1_1.m4s", 512);
+	ParseMP4File("bali_30s_layer1_y0_p0_r0_1_2.m4s", 512);
+	ParseMP4File("bali_30s_layer1_y0_p0_r0_1_3.m4s", 512);
+	*/
 
 #if 0
-  InitializeParser(NULL);
-  std::vector<uint8_t> buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_init.mp4");
-  EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+	std::cout << "\n\n-------------------------------------------\n";
+	InitializeParser(NULL);
+	std::vector<uint8_t> buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_init.mp4");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
 
-  buffer.clear();
-  buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_1.m4s");
-  EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+	buffer.clear();
+	buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_1.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
 
 
-  buffer.clear();
-  buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_1.m4s");
-  EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+	buffer.clear();
+	buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_2.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
 
-  buffer.clear();
-  buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_1.m4s");
-  EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+	buffer.clear();
+	buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_3.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+	std::cout << "\n\n-------------------------------------------\n";
 
 #else
 	std::cout << "\n\n-------------------------------------------\n";

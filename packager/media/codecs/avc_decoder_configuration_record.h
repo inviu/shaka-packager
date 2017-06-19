@@ -14,6 +14,7 @@
 #include "packager/base/macros.h"
 #include "packager/media/base/fourccs.h"
 #include "packager/media/codecs/decoder_configuration_record.h"
+#include "packager/media/codecs/nalu_reader.h"
 
 namespace shaka {
 namespace media {
@@ -26,6 +27,9 @@ class AVCDecoderConfigurationRecord : public DecoderConfigurationRecord {
 
   /// @return The codec string.
   std::string GetCodecString(FourCC codec_fourcc) const;
+
+  std::vector<uint8_t> GetNaluData(shaka::media::Nalu::H264NaluType type);
+  
 
   uint8_t version() const { return version_; }
   uint8_t profile_indication() const { return profile_indication_; }

@@ -529,6 +529,11 @@ bool MP4MediaParser::ParseMoov(BoxReader* reader) {
       std::string codec_string;
       uint8_t nalu_length_size = 0;
 
+	  //add by jadyen
+	  std::vector<uint8_t> sps;
+	  std::vector<uint8_t> pps;
+	  //add by jayden
+
       const FourCC actual_format = entry.GetActualFormat();
       const Codec video_codec = FourCCToCodec(actual_format);
       switch (actual_format) {
@@ -567,6 +572,10 @@ bool MP4MediaParser::ParseMoov(BoxReader* reader) {
             pixel_width = avc_config.pixel_width();
             pixel_height = avc_config.pixel_height();
           }
+
+		  sps = avc_config.GetNaluData(shaka::media::Nalu::H264_SPS);
+		  pps = avc_config.GetNaluData(shaka::media::Nalu::H264_PPS);
+
           break;
         }
         case FOURCC_hev1:
@@ -623,8 +632,20 @@ bool MP4MediaParser::ParseMoov(BoxReader* reader) {
                                              pssh_raw_data.size());
       }
 
-      streams.push_back(video_stream_info);
-    }
+	  if (!sps.empty())
+	  {
+		  video_stream_info->set_sps_data(sps.data(), sps.size());
+		  //video_stream_info->set_sps_data(sps);
+	  }
+
+	  if (!pps.empty())
+	  {
+		  video_stream_info->set_pps_data(pps.data(), pps.size());
+		  //video_stream_info->set_pps_data(pps);
+	  }
+
+	  streams.push_back(video_stream_info);
+	}
   }
 
   init_cb_.Run(streams);

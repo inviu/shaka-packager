@@ -88,6 +88,22 @@ bool AVCDecoderConfigurationRecord::ParseInternal() {
   return true;
 }
 
+std::vector<uint8_t> AVCDecoderConfigurationRecord::GetNaluData(shaka::media::Nalu::H264NaluType type)
+{
+	  std::vector<uint8_t> data;
+	  for (auto it = nalu_.begin(); it != nalu_.end(); ++it)
+	  {
+		  if (it->type() == type)
+		  {
+			  uint32_t size = (*it).header_size() + (*it).payload_size();
+			  data.assign((*it).data(), (*it).data() + size);
+			  break;
+		  }
+	  }
+
+	  return data;
+  }
+
 std::string AVCDecoderConfigurationRecord::GetCodecString(
     FourCC codec_fourcc) const {
   return GetCodecString(codec_fourcc, profile_indication_,

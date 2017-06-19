@@ -61,6 +61,9 @@ class DecoderConfigurationRecord {
     nalu_length_size_ = nalu_length_size;
   }
 
+protected:
+  std::vector<Nalu> nalu_;
+
  private:
   // Performs the actual parsing of the data.
   virtual bool ParseInternal() = 0;
@@ -68,7 +71,6 @@ class DecoderConfigurationRecord {
   // Contains a copy of the data.  This manages the pointer lifetime so the
   // extracted Nalu can accessed.
   std::vector<uint8_t> data_;
-  std::vector<Nalu> nalu_;
   uint8_t nalu_length_size_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderConfigurationRecord);
