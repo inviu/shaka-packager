@@ -32,7 +32,15 @@
           '-Wno-reserved-user-defined-literal',
         ],
       }],
-      ['OS == "win"', {
+      ['clang==0', {
+        'cflags': [
+          '-Wa,--noexecstack',
+        ],
+        'ldflags': [
+          '-Wl,-z,noexecstack'
+        ],
+      }],
+        ['OS == "win"', {
         'msvs_settings': {
           'VCCLCompilerTool': {
             'WarnAsError': 'true',
