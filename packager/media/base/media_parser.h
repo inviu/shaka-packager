@@ -42,8 +42,13 @@ class MediaParser {
                               const std::shared_ptr<MediaSample>& media_sample)>
       NewSampleCB;
 
+  typedef base::Callback<bool(uint32_t track_id,
+                              const std::shared_ptr<MediaSample>& media_sample,
+								int64_t sequence, int32_t sub_sequence)>
+      NewSampleCBEx;
+
   // Signals the end of a media segment.
-  typedef base::Callback<void()> EndMediaSegmentCB;
+  typedef base::Callback<void(int64_t sequence, int32_t sub_sequence)> EndMediaSegmentCB;
 
   /// Initialize the parser with necessary callbacks. Must be called before any
   /// data is passed to Parse().

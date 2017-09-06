@@ -32,10 +32,8 @@ class MP4MediaParser : public MediaParser {
   MP4MediaParser();
   ~MP4MediaParser() override;
 
-  /// @name MediaParser implementation overrides.
-  /// @{
   void Init(const InitCB& init_cb,
-            const NewSampleCB& new_sample_cb,
+            const NewSampleCBEx& new_sample_cb,
             const EndMediaSegmentCB& end_of_segment_cb,
             KeySource* decryption_key_source);
 
@@ -47,6 +45,8 @@ class MP4MediaParser : public MediaParser {
 
   bool Flush() override WARN_UNUSED_RESULT;
   bool Parse(const uint8_t* buf, int size) override WARN_UNUSED_RESULT;
+
+  bool Parse(const uint8_t* buf, int size, int64_t sequence, int32_t sub_sequence);
   /// @}
 
   /// Handles ISO-BMFF containers which have the 'moov' box trailing the
@@ -86,6 +86,7 @@ class MP4MediaParser : public MediaParser {
   State state_;
   InitCB init_cb_;
   NewSampleCB new_sample_cb_;
+  NewSampleCBEx new_sample_cb_ex_;
   EndMediaSegmentCB end_of_segment_cb_;
   KeySource* decryption_key_source_;
   std::unique_ptr<DecryptorSource> decryptor_source_;
@@ -104,6 +105,9 @@ class MP4MediaParser : public MediaParser {
 
   std::unique_ptr<Movie> moov_;
   std::unique_ptr<TrackRunIterator> runs_;
+
+  int64_t	sequence_ = 0;
+  int32_t	sub_sequence_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MP4MediaParser);
 };

@@ -85,14 +85,14 @@ class MP4MediaParserTest : public testing::Test {
   }
 
   bool NewSampleF(uint32_t track_id,
-                  const std::shared_ptr<MediaSample>& sample) {
+                  const std::shared_ptr<MediaSample>& sample, int64_t sequence, int32_t sub_sequence) {
     DVLOG(2) << "Track Id: " << track_id << " "
              << sample->ToString();
     ++num_samples_;
     return true;
   }
 
-  void EndOfSegmentF()
+  void EndOfSegmentF(int64_t sequence, int32_t sub_sequence)
   {
     DVLOG(2) << "End of segment";
   }
@@ -151,9 +151,11 @@ TEST_F(MP4MediaParserTest, TestSomeSegments) {
 	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_1.m4s");
 	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
 
+	/*
 	buffer.clear();
 	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_2.m4s");
 	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
+   */
 
 	buffer.clear();
 	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_3.m4s");
