@@ -158,7 +158,10 @@ class MediaSample {
   }
 
   // If there's no data in this buffer, it represents end of stream.
-  bool end_of_stream() const { return data_.size() == 0; }
+  bool end_of_stream() const { 
+	  //return data_.size() == 0; 
+	  return false;
+  }
 
   const std::string& config_id() const { return config_id_; }
   void set_config_id(const std::string& config_id) {

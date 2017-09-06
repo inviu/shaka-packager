@@ -121,53 +121,69 @@ class MP4MediaParserTest : public testing::Test {
 
 TEST_F(MP4MediaParserTest, TestSomeSegments) {
 #if 1
-	/*
-	ParseMP4File("bali_30s_layer1_y0_p0_r0_1_init.mp4", 512);
-	ParseMP4File("bali_30s_layer1_y0_p0_r0_1_1.m4s", 512);
-	ParseMP4File("bali_30s_layer1_y0_p0_r0_1_2.m4s", 512);
-	ParseMP4File("bali_30s_layer1_y0_p0_r0_1_3.m4s", 512);
-	*/
-
 #if 0
-	std::cout << "\n\n-------------------------------------------\n";
+	std::cout << "\n\n layder 0 -------------------------------------------\n";
 	InitializeParser(NULL);
-	std::vector<uint8_t> buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_init.mp4");
+	std::vector<uint8_t> buffer = ReadTestDataFile("sample3_30s_normal_layer0_1_init.mp4");
 	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
 
 	buffer.clear();
-	buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_1.m4s");
+	buffer = ReadTestDataFile("sample3_30s_normal_layer0_1_1.m4s");
 	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
 
 
 	buffer.clear();
-	buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_2.m4s");
+	buffer = ReadTestDataFile("sample3_30s_normal_layer0_1_2.m4s");
 	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
 
 	buffer.clear();
-	buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_3.m4s");
+	buffer = ReadTestDataFile("sample3_30s_normal_layer0_1_3.m4s");
 	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
 	std::cout << "\n\n-------------------------------------------\n";
 
 #else
-	std::cout << "\n\n-------------------------------------------\n";
+	std::cout << "\n\n layder 1 -------------------------------------------\n";
 	InitializeParser(NULL);
-	std::vector<uint8_t> buffer = ReadTestDataFile("viunidowu.20001100i002.0_v.mp4");
-	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+	std::vector<uint8_t> buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_init.mp4");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
 
 	buffer.clear();
-	buffer = ReadTestDataFile("viunidowu.20001100i002.1_v.m4s");
-	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
-
-
-	buffer.clear();
-	buffer = ReadTestDataFile("viunidowu.20001100i002.2_v.m4s");
-	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_1.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
 
 	buffer.clear();
-	buffer = ReadTestDataFile("viunidowu.20001100i002.3_v.m4s");
-	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_2.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
+
+	buffer.clear();
+	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_3.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
+
+	buffer.clear();
+	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_4.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
+
+	buffer.clear();
+	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_5.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
+
+	buffer.clear();
+	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_6.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
+
+	buffer.clear();
+	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_7.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
+
+	buffer.clear();
+	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_8.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
+
+	buffer.clear();
+	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_9.m4s");
+	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
+
 	std::cout << "\n\n-------------------------------------------\n";
-	
 #endif
 
 #else
