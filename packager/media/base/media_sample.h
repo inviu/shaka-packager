@@ -160,6 +160,7 @@ class MediaSample {
   // If there's no data in this buffer, it represents end of stream.
   bool end_of_stream() const { 
 	  //return data_.size() == 0; 
+	  // change by jayden, to support FE, always return false
 	  return false;
   }
 
