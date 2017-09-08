@@ -85,14 +85,14 @@ class MP4MediaParserTest : public testing::Test {
   }
 
   bool NewSampleF(uint32_t track_id,
-                  const std::shared_ptr<MediaSample>& sample, int64_t sequence, int32_t sub_sequence) {
+                  const std::shared_ptr<MediaSample>& sample) {
     DVLOG(2) << "Track Id: " << track_id << " "
              << sample->ToString();
     ++num_samples_;
     return true;
   }
 
-  void EndOfSegmentF(int64_t sequence, int32_t sub_sequence)
+  void EndOfSegmentF()
   {
     DVLOG(2) << "End of segment";
   }

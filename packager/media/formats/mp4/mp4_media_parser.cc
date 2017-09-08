@@ -124,7 +124,7 @@ void MP4MediaParser::Init(const InitCB& init_cb,
 }
 
 void MP4MediaParser::Init(const InitCB& init_cb,
-                          const NewSampleCBEx& new_sample_cb,
+                          const NewSampleCB& new_sample_cb,
                           const EndMediaSegmentCB& end_of_segment_cb,
                           KeySource* decryption_key_source) {
   DCHECK_EQ(state_, kWaitingForInit);
@@ -135,7 +135,7 @@ void MP4MediaParser::Init(const InitCB& init_cb,
 
   ChangeState(kParsingBoxes);
   init_cb_ = init_cb;
-  new_sample_cb_ex_ = new_sample_cb;
+  new_sample_cb_ = new_sample_cb;
   end_of_segment_cb_ = end_of_segment_cb;
   decryption_key_source_ = decryption_key_source;
   if (decryption_key_source)
@@ -154,13 +154,6 @@ bool MP4MediaParser::Flush() {
   Reset();
   ChangeState(kParsingBoxes);
   return true;
-}
-
-bool MP4MediaParser::Parse(const uint8_t* buf, int size, int64_t sequence, int32_t sub_sequence)
-{
-	sequence_ = sequence;
-	sub_sequence_ = sub_sequence;
-	return Parse(buf, size);
 }
 
 bool MP4MediaParser::Parse(const uint8_t* buf, int size) {
@@ -709,7 +702,7 @@ bool MP4MediaParser::EnqueueSample(bool* err) {
       return false;
 
     if (!end_of_segment_cb_.is_null()) {
-      end_of_segment_cb_.Run(sequence_, sub_sequence_);
+      end_of_segment_cb_.Run();
     }
 
     ChangeState(kParsingBoxes);
@@ -796,12 +789,6 @@ bool MP4MediaParser::EnqueueSample(bool* err) {
     *err = true;
     LOG(ERROR) << "Failed to process the sample.";
     return false;
-  }
-
-  if (!new_sample_cb_ex_.Run(runs_->track_id(), stream_sample, sequence_, sub_sequence_)) {
-	  *err = true;
-	  LOG(ERROR) << "Failed to process the sample.";
-	  return false;
   }
 
   runs_->AdvanceSample();
