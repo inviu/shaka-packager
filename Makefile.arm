@@ -1,0 +1,15 @@
+COMPILER_PREFIX=arm-linux-gnueabi-
+all:
+	export GYP_DEFINES='target_arch=arm64 clang=0 use_sysroot=0 disable_glibcxx_debug=1' && \
+	export AR=$(COMPILER_PREFIX)ar  && \
+	export AS=$(COMPILER_PREFIX)as  && \
+	export CC=$(COMPILER_PREFIX)gcc  && \
+	export CXX=$(COMPILER_PREFIX)g++  && \
+	export LD=$(COMPILER_PREFIX)ld  && \
+	export GYP_CROSSCOMPILE=1 && \
+	export GYP_GENERATORS=make  &&  \
+	python gyp_packager.py
+	make -C packager -j`nproc`
+
+clean:
+	-rm -rf out

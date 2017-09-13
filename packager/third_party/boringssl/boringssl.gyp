@@ -132,7 +132,12 @@
               'sources': [ '<@(boringssl_linux_aarch64_sources)' ],
               # TODO(davidben): Remove explicit arch flag once
               # https://crbug.com/576858 is fixed.
-              'cflags': [ '-march=armv8-a+crypto' ],
+			  ## *BW* Added this, so it will compile for ARM without crypto extension (compiler out of date)
+              'cflags': [ '-march=armv8-a' ],
+              'direct_dependent_settings': {
+                'defines': [ 'OPENSSL_NO_ASM' ],
+              },
+			  ## *BW* end of additions
             }, {
               'direct_dependent_settings': {
                 'defines': [ 'OPENSSL_NO_ASM' ],
