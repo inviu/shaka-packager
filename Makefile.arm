@@ -9,7 +9,9 @@ COMPILER_PREFIX=aarch64-linux-android-
 SYSROOT=$(NDK)/standalone/toolchain/sysroot
 GYP_DEFINES='target_arch=arm64 clang=1 sysroot=$(SYSROOT) disable_glibcxx_debug=1'
 
-TARGETS=allocator base boringssl boringssl_asm libevent file gflags gtest media_base mp4 unified_allocator_shim symbolize curl_config libcurl
+TARGETS = allocator base base_static boringssl boringssl_asm codecs dynamic_annotations
+TARGETS+= libevent file gflags gtest media_base mp4 unified_allocator_shim symbolize curl_config libcurl
+
 all:
 	export GYP_DEFINES=$(GYP_DEFINES) && \
 	export AR_target=$(COMPILER_PREFIX)ar  && \
@@ -20,7 +22,11 @@ all:
 	export GYP_CROSSCOMPILE=0 && \
 	export GYP_GENERATORS=make  &&  \
 	python gyp_packager.py
+	make -C packager BUILDTYPE=Debug $(TARGETS) -j`nproc`
 	make -C packager BUILDTYPE=Release $(TARGETS) -j`nproc`
+	mkdir -p out/aarch64/Debug out/aarch64/Release
+	find out/Debug/obj.target -name "*.a" -exec cp {} out/aarch64/Debug \;
+	find out/Release/obj.target -name "*.a" -exec cp {} out/aarch64/Release \;
 
 clean:
 	-rm -rf out
