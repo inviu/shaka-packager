@@ -1,15 +1,26 @@
-COMPILER_PREFIX=arm-linux-gnueabi-
+##
+## Note: Follow instructions at https://developer.android.com/ndk/guides/standalone_toolchain.html to install
+## the toolchain. It is assumed it is installed to $NDK/standalone/toolchain/
+## Using command: 
+## $NDK/build/tools/make_standalone_toolchain.py --arch arm64 --api 21 --install-dir $NDK/standalone/toolchain
+## and that $NDK/standalone/toolchain/bin is included in your path
+
+COMPILER_PREFIX=aarch64-linux-android-
+SYSROOT=$(NDK)/standalone/toolchain/sysroot
+GYP_DEFINES='target_arch=arm64 clang=1 sysroot=$(SYSROOT) disable_glibcxx_debug=1'
+
+TARGETS=allocator base boringssl boringssl_asm libevent file gflags gtest media_base mp4 unified_allocator_shim symbolize curl_config libcurl
 all:
-	export GYP_DEFINES='target_arch=arm64 clang=0 use_sysroot=0 disable_glibcxx_debug=1' && \
-	export AR=$(COMPILER_PREFIX)ar  && \
-	export AS=$(COMPILER_PREFIX)as  && \
-	export CC=$(COMPILER_PREFIX)gcc  && \
-	export CXX=$(COMPILER_PREFIX)g++  && \
-	export LD=$(COMPILER_PREFIX)ld  && \
-	export GYP_CROSSCOMPILE=1 && \
+	export GYP_DEFINES=$(GYP_DEFINES) && \
+	export AR_target=$(COMPILER_PREFIX)ar  && \
+	export AS_target=$(COMPILER_PREFIX)as  && \
+	export CC_target=$(COMPILER_PREFIX)clang  && \
+	export CXX_target=$(COMPILER_PREFIX)clang++  && \
+	export LD_target=$(COMPILER_PREFIX)ld  && \
+	export GYP_CROSSCOMPILE=0 && \
 	export GYP_GENERATORS=make  &&  \
 	python gyp_packager.py
-	make -C packager -j`nproc`
+	make -C packager BUILDTYPE=Release $(TARGETS) -j`nproc`
 
 clean:
 	-rm -rf out

@@ -133,7 +133,7 @@
               # TODO(davidben): Remove explicit arch flag once
               # https://crbug.com/576858 is fixed.
 			  ## *BW* Added this, so it will compile for ARM without crypto extension (compiler out of date)
-              'cflags': [ '-march=armv8-a' ],
+              'cflags': [ '-march=armv8-a+crypto' ],
               'direct_dependent_settings': {
                 'defines': [ 'OPENSSL_NO_ASM' ],
               },
