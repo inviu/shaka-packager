@@ -1,0 +1,51 @@
+##
+## Note: Follow instructions at https://developer.android.com/ndk/guides/standalone_toolchain.html to install
+## the toolchain. It is assumed it is installed to $NDK/standalone/toolchain/
+## Using command: 
+## $NDK/build/tools/make_standalone_toolchain.py --arch arm --api 21 --install-dir $NDK/standalone/toolchain32
+## and that $NDK/standalone/toolchain/bin is included in your path
+
+##
+## Check NDK installation
+##
+ifeq ("$(NDK)","")
+    $(error You MUST define NDK environment variable - for example export NDK=~/Android/ndk or make -f Makefile.arm NDK=~/Android/ndk )
+endif
+
+ifeq (, $(shell which git))
+    $(error "No git in $(PATH), consider doing apt-get install git")
+endif
+
+
+TOOLCHAIN_ROOT=$(NDK)/standalone/toolchain32
+COMPILER_PREFIX=$(TOOLCHAIN_ROOT)/bin/arm-linux-androideabi-
+SYSROOT=$(TOOLCHAIN_ROOT)/sysroot
+GYP_DEFINES='target_arch=armv7-a clang=0 sysroot=$(SYSROOT) disable_glibcxx_debug=1 use_experimental_allocator_shim=0 android_ndk_absolute_root=$(NDK)'
+##GYP_DEFINES='target_arch=arm OS=android clang=1 sysroot=$(SYSROOT) disable_glibcxx_debug=1'
+TARGETS = base base_static boringssl boringssl_asm codecs dynamic_annotations
+TARGETS+= libevent file gflags gtest media_base mp4 symbolize curl_config libcurl
+
+ifeq (, $(wildcard $(COMPILER_PREFIX)gcc))
+    $(error "No $(COMPILER_PREFIX)gcc accessible, install standalone32 toolchain using $$NDK/build/tools/make_standalone_toolchain.py --arch arm --api 21 --install-dir $$NDK/standalone/toolchain32")
+endif
+
+all:
+	export GYP_DEFINES=$(GYP_DEFINES) && \
+	export AR_target=$(COMPILER_PREFIX)ar  && \
+	export AS_target=$(COMPILER_PREFIX)as  && \
+	export CC_target=$(COMPILER_PREFIX)gcc  && \
+	export CXX_target=$(COMPILER_PREFIX)g++  && \
+	export CC=$(COMPILER_PREFIX)gcc  && \
+	export CXX=$(COMPILER_PREFIX)g++  && \
+	export LD_target=$(COMPILER_PREFIX)ld  && \
+	export GYP_CROSSCOMPILE=0 && \
+	export GYP_GENERATORS=make  &&  \
+	python gyp_packager.py
+	make -C packager BUILDTYPE=Debug $(TARGETS) -j`nproc`
+	make -C packager BUILDTYPE=Release $(TARGETS) -j`nproc`
+	mkdir -p out/arm/Debug out/arm/Release
+	find out/Debug/obj.target -name "*.a" -exec cp {} out/arm/Debug \;
+	find out/Release/obj.target -name "*.a" -exec cp {} out/arm/Release \;
+
+clean:
+	-rm -rf out

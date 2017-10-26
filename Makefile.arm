@@ -1,0 +1,47 @@
+##
+## Note: Follow instructions at https://developer.android.com/ndk/guides/standalone_toolchain.html to install
+## the toolchain. It is assumed it is installed to $NDK/standalone/toolchain/
+## Using command: 
+## $NDK/build/tools/make_standalone_toolchain.py --arch arm64 --api 21 --install-dir $NDK/standalone/toolchain
+## and that $NDK/standalone/toolchain/bin is included in your path
+
+##
+## Check NDK installation
+##
+ifeq ("$(NDK)","")
+    $(error You MUST define NDK environment variable - for example export NDK=~/Android/ndk or make -f Makefile.arm NDK=~/Android/ndk )
+endif
+
+ifeq (, $(shell which git))
+    $(error "No git in $(PATH), consider doing apt-get install git")
+endif
+
+ifeq (, $(shell which aarch64-linux-android-clang))
+    $(error "No aarch64-linux-android-clang accessible, consider adding $(NDK)/standalone/toolchain/bin to your path")
+endif
+
+COMPILER_PREFIX=aarch64-linux-android-
+SYSROOT=$(NDK)/standalone/toolchain/sysroot
+GYP_DEFINES='target_arch=arm64 clang=1 sysroot=$(SYSROOT) disable_glibcxx_debug=1 use_experimental_allocator_shim=0 android_ndk_absolute_root=$(NDK)'
+##GYP_DEFINES='target_arch=arm64 OS=android clang=1 sysroot=$(SYSROOT) disable_glibcxx_debug=1'
+TARGETS = base base_static boringssl boringssl_asm codecs dynamic_annotations
+TARGETS+= libevent file gflags gtest media_base mp4 symbolize curl_config libcurl
+
+all:
+	export GYP_DEFINES=$(GYP_DEFINES) && \
+	export AR_target=$(COMPILER_PREFIX)ar  && \
+	export AS_target=$(COMPILER_PREFIX)as  && \
+	export CC_target=$(COMPILER_PREFIX)clang  && \
+	export CXX_target=$(COMPILER_PREFIX)clang++  && \
+	export LD_target=$(COMPILER_PREFIX)ld  && \
+	export GYP_CROSSCOMPILE=0 && \
+	export GYP_GENERATORS=make  &&  \
+	python gyp_packager.py
+	make -C packager BUILDTYPE=Debug $(TARGETS) -j`nproc`
+	make -C packager BUILDTYPE=Release $(TARGETS) -j`nproc`
+	mkdir -p out/aarch64/Debug out/aarch64/Release
+	find out/Debug/obj.target -name "*.a" -exec cp {} out/aarch64/Debug \;
+	find out/Release/obj.target -name "*.a" -exec cp {} out/aarch64/Release \;
+
+clean:
+	-rm -rf out
