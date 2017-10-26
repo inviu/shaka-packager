@@ -1,0 +1,425 @@
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/base/allocator/allocator_shim_default_dispatch_to_glibc.cc shaka_packager-arm32/src/packager/base/allocator/allocator_shim_default_dispatch_to_glibc.cc
+--- shaka_packager_clean/src/packager/base/allocator/allocator_shim_default_dispatch_to_glibc.cc	2017-06-07 13:27:55.890103200 -0700
++++ shaka_packager-arm32/src/packager/base/allocator/allocator_shim_default_dispatch_to_glibc.cc	2017-09-18 20:36:07.204759467 -0700
+@@ -21,6 +21,7 @@
+ using base::allocator::AllocatorDispatch;
+ 
+ void* GlibcMalloc(const AllocatorDispatch*, size_t size) {
++#pragma message("Using __libc_malloc")
+   return __libc_malloc(size);
+ }
+ 
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/base/debug/stack_trace_posix.cc shaka_packager-arm32/src/packager/base/debug/stack_trace_posix.cc
+--- shaka_packager_clean/src/packager/base/debug/stack_trace_posix.cc	2017-06-07 13:27:56.296518000 -0700
++++ shaka_packager-arm32/src/packager/base/debug/stack_trace_posix.cc	2017-09-16 23:09:40.446511474 -0700
+@@ -25,7 +25,8 @@
+ #if defined(__GLIBCXX__)
+ #include <cxxabi.h>
+ #endif
+-#if !defined(__UCLIBC__)
++//*BW* - compile error on android if this is included #if !defined(__UCLIBC__)
++#if !defined(__UCLIBC__)&&0
+ #include <execinfo.h>
+ #endif
+ 
+@@ -717,7 +718,8 @@
+   // NOTE: This code MUST be async-signal safe (it's used by in-process
+   // stack dumping signal handler). NO malloc or stdio is allowed here.
+ 
+-#if !defined(__UCLIBC__)
++//*BW* Compile error on android if this included #if !defined(__UCLIBC__)
++#if !defined(__UCLIBC__)&&0
+   // Though the backtrace API man page does not list any possible negative
+   // return values, we take no chance.
+   count_ = base::saturated_cast<size_t>(backtrace(trace_, arraysize(trace_)));
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/base/files/file_posix.cc shaka_packager-arm32/src/packager/base/files/file_posix.cc
+--- shaka_packager_clean/src/packager/base/files/file_posix.cc	2017-06-07 13:27:56.318575500 -0700
++++ shaka_packager-arm32/src/packager/base/files/file_posix.cc	2017-09-15 04:04:27.851677978 -0700
+@@ -20,7 +20,11 @@
+ #if defined(OS_ANDROID)
+ #include "base/os_compat_android.h"
+ #endif
+-
++//*BW*
++#if !defined(__USE_XOPEN2K8)
++#define __USE_XOPEN2K8
++#endif
++//*BW*
+ namespace base {
+ 
+ // Make sure our Whence mappings match the system headers.
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/base/process/memory_linux.cc shaka_packager-arm32/src/packager/base/process/memory_linux.cc
+--- shaka_packager_clean/src/packager/base/process/memory_linux.cc	2017-06-07 13:27:56.518106100 -0700
++++ shaka_packager-arm32/src/packager/base/process/memory_linux.cc	2017-10-26 10:30:31.116523748 -0700
+@@ -205,13 +205,17 @@
+ bool UncheckedMalloc(size_t size, void** result) {
+ #if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+   *result = allocator::UncheckedAlloc(size);
++#pragma message "allocator::UncheckedAlloc"
+ #elif defined(MEMORY_TOOL_REPLACES_ALLOCATOR) || \
+     (!defined(LIBC_GLIBC) && !defined(USE_TCMALLOC))
++#pragma message "malloc"
+   *result = malloc(size);
+ #elif defined(LIBC_GLIBC) && !defined(USE_TCMALLOC)
+   *result = __libc_malloc(size);
++#pragma message "__libc_malloc"
+ #elif defined(USE_TCMALLOC)
+   *result = tc_malloc_skip_new_handler(size);
++//#error "tc_malloc_skip_new_handler"
+ #endif
+   return *result != NULL;
+ }
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/base/synchronization/lock_impl_posix.cc shaka_packager-arm32/src/packager/base/synchronization/lock_impl_posix.cc
+--- shaka_packager_clean/src/packager/base/synchronization/lock_impl_posix.cc	2017-06-07 13:27:56.626264500 -0700
++++ shaka_packager-arm32/src/packager/base/synchronization/lock_impl_posix.cc	2017-09-15 04:06:14.663744432 -0700
+@@ -20,7 +20,8 @@
+ // Lock::PriorityInheritanceAvailable still must be checked as the code may
+ // compile but the underlying platform still may not correctly support priority
+ // inheritance locks.
+-#if defined(OS_NACL) || defined(OS_ANDROID)
++//*BW*#if defined(OS_NACL) || defined(OS_ANDROID)
++#if defined(OS_NACL) || defined(OS_ANDROID) || 1
+ #define PRIORITY_INHERITANCE_LOCKS_POSSIBLE() 0
+ #else
+ #define PRIORITY_INHERITANCE_LOCKS_POSSIBLE() 1
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/base/third_party/libevent/select.c shaka_packager-arm32/src/packager/base/third_party/libevent/select.c
+--- shaka_packager_clean/src/packager/base/third_party/libevent/select.c	2017-06-07 13:27:56.769037400 -0700
++++ shaka_packager-arm32/src/packager/base/third_party/libevent/select.c	2017-09-15 04:08:57.476166627 -0700
+@@ -60,6 +60,8 @@
+ #define        howmany(x, y)   (((x)+((y)-1))/(y))
+ #endif
+ 
++//*BW*#undef _EVENT_HAVE_FD_MASK
++
+ #ifndef _EVENT_HAVE_FD_MASK
+ /* This type is mandatory, but Android doesn't define it. */
+ #undef NFDBITS
+@@ -67,6 +69,12 @@
+ typedef unsigned long fd_mask;
+ #endif
+ 
++//*BW* Start
++#undef NFDBITS
++#define NFDBITS (sizeof(long)*8)
++typedef unsigned long fd_mask2;
++//*BW* end
++
+ struct selectop {
+ 	int event_fds;		/* Highest fd in fd set */
+ 	int event_fdsz;
+@@ -108,7 +116,7 @@
+ 	if (!(sop = calloc(1, sizeof(struct selectop))))
+ 		return (NULL);
+ 
+-	select_resize(sop, howmany(32 + 1, NFDBITS)*sizeof(fd_mask));
++	select_resize(sop, howmany(32 + 1, NFDBITS)*sizeof(fd_mask2));
+ 
+ 	evsignal_init(base);
+ 
+@@ -215,8 +223,8 @@
+ 	struct event **r_by_fd = NULL;
+ 	struct event **w_by_fd = NULL;
+ 
+-	n_events = (fdsz/sizeof(fd_mask)) * NFDBITS;
+-	n_events_old = (sop->event_fdsz/sizeof(fd_mask)) * NFDBITS;
++	n_events = (fdsz/sizeof(fd_mask2)) * NFDBITS;
++	n_events_old = (sop->event_fdsz/sizeof(fd_mask2)) * NFDBITS;
+ 
+ 	if (sop->event_readset_in)
+ 		check_selectop(sop);
+@@ -278,11 +286,11 @@
+ 	if (sop->event_fds < ev->ev_fd) {
+ 		int fdsz = sop->event_fdsz;
+ 
+-		if (fdsz < sizeof(fd_mask))
+-			fdsz = sizeof(fd_mask);
++		if (fdsz < sizeof(fd_mask2))
++			fdsz = sizeof(fd_mask2);
+ 
+ 		while (fdsz <
+-		    (howmany(ev->ev_fd + 1, NFDBITS) * sizeof(fd_mask)))
++		    (howmany(ev->ev_fd + 1, NFDBITS) * sizeof(fd_mask2)))
+ 			fdsz *= 2;
+ 
+ 		if (fdsz != sop->event_fdsz) {
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/base/trace_event/malloc_dump_provider.cc shaka_packager-arm32/src/packager/base/trace_event/malloc_dump_provider.cc
+--- shaka_packager_clean/src/packager/base/trace_event/malloc_dump_provider.cc	2017-06-07 13:27:56.870589100 -0700
++++ shaka_packager-arm32/src/packager/base/trace_event/malloc_dump_provider.cc	2017-09-18 22:08:24.873104745 -0700
+@@ -200,7 +200,7 @@
+ }
+ 
+ void MallocDumpProvider::OnHeapProfilingEnabled(bool enabled) {
+-#if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
++#if BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)&&0
+   if (enabled) {
+     {
+       AutoLock lock(allocation_register_lock_);
+@@ -214,6 +214,7 @@
+     // Once disabled, heap profiling will not re-enabled anymore for the
+     // lifetime of the process.
+   }
++#error
+ #endif
+   heap_profiler_enabled_ = enabled;
+ }
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/build/common.gypi shaka_packager-arm32/src/packager/build/common.gypi
+--- shaka_packager_clean/src/packager/build/common.gypi	2017-06-07 13:27:52.123746200 -0700
++++ shaka_packager-arm32/src/packager/build/common.gypi	2017-10-26 11:08:52.320636591 -0700
+@@ -2572,7 +2572,7 @@
+         }],
+       ],
+       'clang_warning_flags': [
+-        '-Wheader-hygiene',
++        ##'-Wheader-hygiene',
+ 
+         # TODO(thakis): Consider -Wloop-analysis (turns on
+         # -Wrange-loop-analysis too).
+@@ -2591,7 +2591,7 @@
+         '-Wno-covered-switch-default',
+ 
+         # Warns when a const char[] is converted to bool.
+-        '-Wstring-conversion',
++        ##'-Wstring-conversion',
+ 
+         # C++11-related flags:
+ 
+@@ -3023,7 +3023,7 @@
+       }],
+       ['enable_wexit_time_destructors==1 and OS!="win"', {
+         # TODO: Enable on Windows too, http://crbug.com/404525
+-        'variables': { 'clang_warning_flags': ['-Wexit-time-destructors']},
++        ##'variables': { 'clang_warning_flags': ['-Wexit-time-destructors']},
+       }],
+       ['chromium_code==0', {
+         'variables': {
+@@ -3603,7 +3603,7 @@
+         ],
+         'cflags': [
+           '<(werror)',  # See note above about the werror variable.
+-          '-pthread',
++##*BW* android doesn't need pthread library          '-pthread',
+           '-fno-strict-aliasing',  # See http://crbug.com/32204
+           '-Wall',
+           '<(wextra)',
+@@ -3627,7 +3627,8 @@
+           '-fvisibility-inlines-hidden',
+         ],
+         'ldflags': [
+-          '-pthread', '-Wl,-z,noexecstack',
++##*BW* android doesn't need pthread library          '-pthread', 
++		  '-Wl,-z,noexecstack',
+         ],
+         'libraries' : [
+           '<(libraries_for_target)',
+@@ -3754,7 +3755,7 @@
+                   # TODO(pcc): Fix linker bug which requires us to link pthread
+                   # unconditionally here (crbug.com/623236).
+                   '-Wl,--no-as-needed',
+-                  '-lpthread',
++##*BW* android doesn't need pthread library                  '-lpthread',
+                   '-Wl,--as-needed',
+                 ],
+               }],
+@@ -6020,8 +6021,8 @@
+       # Set default ARM cross tools on linux.  These can be overridden
+       # using CC,CXX,CC.host and CXX.host environment variables.
+       'make_global_settings': [
+-        ['CC', '<!(which arm-linux-gnueabihf-gcc)'],
+-        ['CXX', '<!(which arm-linux-gnueabihf-g++)'],
++##        ['CC', '<!(which arm-linux-gnueabihf-gcc)'],
++##        ['CXX', '<!(which arm-linux-gnueabihf-g++)'],
+         ['CC.host', '<(host_cc)'],
+         ['CXX.host', '<(host_cxx)'],
+       ],
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/build/util/LASTCHANGE shaka_packager-arm32/src/packager/build/util/LASTCHANGE
+--- shaka_packager_clean/src/packager/build/util/LASTCHANGE	2017-06-07 13:31:44.120539800 -0700
++++ shaka_packager-arm32/src/packager/build/util/LASTCHANGE	2017-06-21 02:43:00.878283800 -0700
+@@ -1 +1 @@
+-LASTCHANGE=f0243d787961584ac95a86e7dae897b9b60ea674
++LASTCHANGE=f0243d787961584ac95a86e7dae897b9b60ea674
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/common.gypi shaka_packager-arm32/src/packager/common.gypi
+--- shaka_packager_clean/src/packager/common.gypi	2017-06-07 13:27:23.030498600 -0700
++++ shaka_packager-arm32/src/packager/common.gypi	2017-10-26 12:20:43.525318150 -0700
+@@ -32,7 +32,15 @@
+           '-Wno-reserved-user-defined-literal',
+         ],
+       }],
+-      ['OS == "win"', {
++      ['clang==0', {
++        'cflags': [
++          '-Wa,--noexecstack',
++        ],
++        'ldflags': [
++          '-Wl,-z,noexecstack'
++        ],
++      }],
++        ['OS == "win"', {
+         'msvs_settings': {
+           'VCCLCompilerTool': {
+             'WarnAsError': 'true',
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/media/base/media_sample.h shaka_packager-arm32/src/packager/media/base/media_sample.h
+--- shaka_packager_clean/src/packager/media/base/media_sample.h	2017-06-07 13:27:23.054651500 -0700
++++ shaka_packager-arm32/src/packager/media/base/media_sample.h	2017-10-26 12:19:09.317381702 -0700
+@@ -158,7 +158,11 @@
+   }
+ 
+   // If there's no data in this buffer, it represents end of stream.
+-  bool end_of_stream() const { return data_.size() == 0; }
++  bool end_of_stream() const { 
++	  //return data_.size() == 0; 
++	  // change by jayden, to support FE, always return false
++	  return false;
++  }
+ 
+   const std::string& config_id() const { return config_id_; }
+   void set_config_id(const std::string& config_id) {
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/media/formats/mp4/mp4_media_parser.h shaka_packager-arm32/src/packager/media/formats/mp4/mp4_media_parser.h
+--- shaka_packager_clean/src/packager/media/formats/mp4/mp4_media_parser.h	2017-06-20 15:19:19.264318100 -0700
++++ shaka_packager-arm32/src/packager/media/formats/mp4/mp4_media_parser.h	2017-10-26 12:19:09.317381702 -0700
+@@ -32,8 +32,6 @@
+   MP4MediaParser();
+   ~MP4MediaParser() override;
+ 
+-  /// @name MediaParser implementation overrides.
+-  /// @{
+   void Init(const InitCB& init_cb,
+             const NewSampleCB& new_sample_cb,
+             const EndMediaSegmentCB& end_of_segment_cb,
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/media/formats/mp4/mp4_media_parser_unittest.cc shaka_packager-arm32/src/packager/media/formats/mp4/mp4_media_parser_unittest.cc
+--- shaka_packager_clean/src/packager/media/formats/mp4/mp4_media_parser_unittest.cc	2017-06-20 15:19:27.805280100 -0700
++++ shaka_packager-arm32/src/packager/media/formats/mp4/mp4_media_parser_unittest.cc	2017-10-26 12:19:09.317381702 -0700
+@@ -121,53 +121,71 @@
+ 
+ TEST_F(MP4MediaParserTest, TestSomeSegments) {
+ #if 1
+-	/*
+-	ParseMP4File("bali_30s_layer1_y0_p0_r0_1_init.mp4", 512);
+-	ParseMP4File("bali_30s_layer1_y0_p0_r0_1_1.m4s", 512);
+-	ParseMP4File("bali_30s_layer1_y0_p0_r0_1_2.m4s", 512);
+-	ParseMP4File("bali_30s_layer1_y0_p0_r0_1_3.m4s", 512);
+-	*/
+-
+ #if 0
+-	std::cout << "\n\n-------------------------------------------\n";
++	std::cout << "\n\n layder 0 -------------------------------------------\n";
+ 	InitializeParser(NULL);
+-	std::vector<uint8_t> buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_init.mp4");
++	std::vector<uint8_t> buffer = ReadTestDataFile("sample3_30s_normal_layer0_1_init.mp4");
+ 	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+ 
+ 	buffer.clear();
+-	buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_1.m4s");
++	buffer = ReadTestDataFile("sample3_30s_normal_layer0_1_1.m4s");
+ 	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+ 
+ 
+ 	buffer.clear();
+-	buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_2.m4s");
++	buffer = ReadTestDataFile("sample3_30s_normal_layer0_1_2.m4s");
+ 	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+ 
+ 	buffer.clear();
+-	buffer = ReadTestDataFile("short2_tc_layer1_y0_p0_r0_1_3.m4s");
++	buffer = ReadTestDataFile("sample3_30s_normal_layer0_1_3.m4s");
+ 	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
+ 	std::cout << "\n\n-------------------------------------------\n";
+ 
+ #else
+-	std::cout << "\n\n-------------------------------------------\n";
++	std::cout << "\n\n layder 1 -------------------------------------------\n";
+ 	InitializeParser(NULL);
+-	std::vector<uint8_t> buffer = ReadTestDataFile("viunidowu.20001100i002.0_v.mp4");
+-	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
++	std::vector<uint8_t> buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_init.mp4");
++	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
+ 
+ 	buffer.clear();
+-	buffer = ReadTestDataFile("viunidowu.20001100i002.1_v.m4s");
+-	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
++	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_1.m4s");
++	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
+ 
++	/*
++	buffer.clear();
++	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_2.m4s");
++	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
++   */
+ 
+ 	buffer.clear();
+-	buffer = ReadTestDataFile("viunidowu.20001100i002.2_v.m4s");
+-	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
++	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_3.m4s");
++	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
+ 
+ 	buffer.clear();
+-	buffer = ReadTestDataFile("viunidowu.20001100i002.3_v.m4s");
+-	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512));
++	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_4.m4s");
++	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
++
++	buffer.clear();
++	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_5.m4s");
++	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
++
++	buffer.clear();
++	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_6.m4s");
++	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
++
++	buffer.clear();
++	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_7.m4s");
++	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
++
++	buffer.clear();
++	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_8.m4s");
++	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
++
++	buffer.clear();
++	buffer = ReadTestDataFile("sample3_30s_normal_layer1_y0p0r0_1_9.m4s");
++	EXPECT_TRUE(AppendDataInPieces(buffer.data(), buffer.size(), 512 * 1024));
++
+ 	std::cout << "\n\n-------------------------------------------\n";
+-	
+ #endif
+ 
+ #else
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/third_party/boringssl/boringssl.gyp shaka_packager-arm32/src/packager/third_party/boringssl/boringssl.gyp
+--- shaka_packager_clean/src/packager/third_party/boringssl/boringssl.gyp	2017-06-07 13:27:23.304373800 -0700
++++ shaka_packager-arm32/src/packager/third_party/boringssl/boringssl.gyp	2017-10-26 12:20:43.556027020 -0700
+@@ -132,7 +132,12 @@
+               'sources': [ '<@(boringssl_linux_aarch64_sources)' ],
+               # TODO(davidben): Remove explicit arch flag once
+               # https://crbug.com/576858 is fixed.
++			  ## *BW* Added this, so it will compile for ARM without crypto extension (compiler out of date)
+               'cflags': [ '-march=armv8-a+crypto' ],
++              'direct_dependent_settings': {
++                'defines': [ 'OPENSSL_NO_ASM' ],
++              },
++			  ## *BW* end of additions
+             }, {
+               'direct_dependent_settings': {
+                 'defines': [ 'OPENSSL_NO_ASM' ],
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/third_party/curl/source/lib/if2ip.c shaka_packager-arm32/src/packager/third_party/curl/source/lib/if2ip.c
+--- shaka_packager_clean/src/packager/third_party/curl/source/lib/if2ip.c	2017-06-07 13:28:07.090710700 -0700
++++ shaka_packager-arm32/src/packager/third_party/curl/source/lib/if2ip.c	2017-09-15 04:09:36.695663099 -0700
+@@ -92,7 +92,8 @@
+ }
+ 
+ 
+-#if defined(HAVE_GETIFADDRS)
++//*BW*#if defined(HAVE_GETIFADDRS)
++#if defined(HAVE_GETIFADDRS) && 0
+ 
+ bool Curl_if_is_interface_name(const char *interf)
+ {
+diff -u -r -x .git -x '*.a' -x '*.Makefile' -x '*.mk' -x .gclient_entries shaka_packager_clean/src/packager/tools/gyp/pylib/gyp/generator/make.py shaka_packager-arm32/src/packager/tools/gyp/pylib/gyp/generator/make.py
+--- shaka_packager_clean/src/packager/tools/gyp/pylib/gyp/generator/make.py	2017-06-07 13:28:00.717006600 -0700
++++ shaka_packager-arm32/src/packager/tools/gyp/pylib/gyp/generator/make.py	2017-09-14 23:53:34.812613253 -0700
+@@ -1581,7 +1581,7 @@
+             "Spaces in alink input filenames not supported (%s)"  % link_dep)
+       if (self.flavor not in ('mac', 'openbsd', 'netbsd', 'win') and not
+           self.is_standalone_static_library):
+-        self.WriteDoCmd([self.output_binary], link_deps, 'alink_thin',
++        self.WriteDoCmd([self.output_binary], link_deps, 'alink',
+                         part_of_all, postbuilds=postbuilds)
+       else:
+         self.WriteDoCmd([self.output_binary], link_deps, 'alink', part_of_all,
